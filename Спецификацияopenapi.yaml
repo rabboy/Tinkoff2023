@@ -24,11 +24,11 @@ paths:
           example: 1221122112
       responses:
         "200":
-          description: Успешный ответ со статусом клиента Заблокирован
+          description: Успешный ответ со статусом клиента Заблокирован и выводом всех параметров клиента
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Client/properties/status'
+                $ref: '#/components/schemas/Client'
         default:
           description: Любая неожиданная ошибка
           content:
@@ -52,11 +52,11 @@ paths:
           example: 1221122112
       responses:
         "200":
-          description: Успешный ответ со статусом клиента Разблокирован
+          description: Успешный ответ со статусом клиента Разблокирован и выводом всех параметров клиента
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Client/properties/status'
+                $ref: '#/components/schemas/Client'
         default:
           description: Любая неожиданная ошибка
           content:
@@ -73,13 +73,13 @@ paths:
         - name: id_client
           in: path
           required: true
-          description: Идентификатор транзакции
+          description: Идентификатор клиента
           schema:
             type: integer
             example: 0123456789
       responses:
         "200":
-          description: Успешный ответ со статусом блокировки транзакции
+          description: Успешный ответ со статусом блокировки клиента
           content:
             application/json:
               schema:
@@ -90,26 +90,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /api/client/payments/fraud-check{block_rate}:
+  /api/client/payments/fraud-check{id_client}:
     get:
       summary: Метод определения добропорядочности клиента
       operationId: getFraudulent
       tags:
         - blockPayments
       parameters:
-        - name: block_rate
+        - name: id_client
           in: path
           required: true
-          description: количество заблокированных платежей
+          description: Идентификационный номер клиента
           schema:
             type: integer
       responses:
         "200":
-          description: успешный ответ с выводом количества мошеннических платежей
+          description: Успешный ответ с выводом количества мошеннических платежей
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Client/properties/block_rate'
+                $ref: '#/components/schemas/Client/properties/fraudance_rate'
         default:
           description: Любая неожиданная ошибка
           content:
@@ -126,7 +126,7 @@ components:
         - id_client
         - name
         - status
-        - block_rate
+        - fraudance_rate
       properties:
         id_client:
           description: Идентификационный номер клиента
@@ -143,10 +143,14 @@ components:
             - blocked
             - unblocked
           example: unlocked 
-        block_rate: 
+        fraudance_rate: 
           description: количество заблокированных платежей
           type: integer 
           example: 10
+    Clients:
+      type: array
+      items:
+        $ref: '#/components/schemas/Client'
     Transaction:
       type: object 
       required:
