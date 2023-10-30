@@ -1,0 +1,197 @@
+openapi: 3.0.0
+info:
+  title: Сервис по отправке платежей юридическим лицам 
+  version: 0.0.2
+servers:
+  - url: http://localhost:8080/api/v1/
+    description: Dev server  
+  
+paths:
+  /api/client/payments/block/{id_trans}:
+    post:
+      summary: Блокировка платежей  клиента
+      description: Метод предназначен для блокировки платежей конкретного клиента.
+      operationId: lockPaymentClient
+      tags:
+        - blockPayments
+      parameters:
+        - name: id_trans
+          in: path
+          required: true
+          description: Идентификатор транзакции
+          schema:
+            type: integer
+          example: 1221122112
+      responses:
+        "200":
+          description: Успешный ответ со статусом клиента Заблокирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client/properties/status'
+        default:
+          description: Любая неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/client/payments/unblock/{id_trans}:
+    post:
+      summary: Разблокировка платежей  клиента
+      description: Метод предназначен для разблокировки платежей конкретного клиента.
+      operationId: unlockPaymentClient
+      tags:
+        - blockPayments
+      parameters:
+        - name: id_trans
+          in: path
+          required: true
+          description: Идентификатор транзакции
+          schema:
+            type: integer
+          example: 1221122112
+      responses:
+        "200":
+          description: Успешный ответ со статусом клиента Разблокирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client/properties/status'
+        default:
+          description: Любая неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/client/payments/check{id_client}:
+    get:
+      summary: Метод проверки статуса блокировки клиента
+      operationId: getBlockStatusClient
+      tags:
+        - blockPayments
+      parameters:
+        - name: id_client
+          in: path
+          required: true
+          description: Идентификатор транзакции
+          schema:
+            type: integer
+            example: 0123456789
+      responses:
+        "200":
+          description: Успешный ответ со статусом блокировки транзакции
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client/properties/status'
+        default:
+          description: Любая неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/client/payments/fraud-check{block_rate}:
+    get:
+      summary: Метод определения добропорядочности клиента
+      operationId: getFraudulent
+      tags:
+        - blockPayments
+      parameters:
+        - name: block_rate
+          in: path
+          required: true
+          description: количество заблокированных платежей
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: успешный ответ с выводом количества мошеннических платежей
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client/properties/block_rate'
+        default:
+          description: Любая неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  
+components:
+  schemas:
+    Client:
+      type: object 
+      required:
+        - id_client
+        - name
+        - status
+        - block_rate
+      properties:
+        id_client:
+          description: Идентификационный номер клиента
+          type: integer
+          example: 1234567890
+        name:
+          description: Имя клиента
+          type: string
+          example: Vasily
+        status:
+          description: Статус блокировки клиента
+          type: string
+          enum:
+            - blocked
+            - unblocked
+          example: unlocked 
+        block_rate: 
+          description: количество заблокированных платежей
+          type: integer 
+          example: 10
+    Transaction:
+      type: object 
+      required:
+        - id_trans
+        - id_client_send
+        - id_client_get
+        - money
+        - date_time
+      properties:
+        id_trans:
+          description: идентификационный номер транзакции
+          type: integer
+          example: 1234567890
+        id_client_send:
+          description: идентификационный номер клиента-отправителя
+          type: integer
+          example: 1234567890
+        id_client_get:
+          description: идентификационный номер Юр.лица-получателя
+          type: integer
+          example: 1234567890
+        fraudulent:
+          description: мошеннический платёж или нет
+          type: boolean
+          example: false
+        money:
+          description: количество переведённых средств
+          type: number
+          example: 120.0
+        date_time:
+          description: Дата и время проведения транзакции
+          type: string
+          example: 2022-07-01T15:00:00+01
+    Transactions:
+      type: array
+      items:
+        $ref: '#/components/schemas/Transaction'
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
